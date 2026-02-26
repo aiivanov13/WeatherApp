@@ -11,8 +11,7 @@ import Foundation
 
 protocol MainNetworkProtocol: Sendable {
     
-    func fetchCurrentWeather(lat: String, lon: String) async throws -> CurrentWeatherResponse
-    func fetchForecastWeather(lat: String, lon: String, days: Int) async throws -> ForecastWeatherResponse
+    func fetchWeather(lat: String, lon: String, days: Int) async throws -> ForecastWeatherResponse
 }
 
 // MARK: - Network Implementation
@@ -32,11 +31,7 @@ struct MainNetwork {
 
 extension MainNetwork: MainNetworkProtocol {
     
-    func fetchCurrentWeather(lat: String, lon: String) async throws -> CurrentWeatherResponse {
-        try await networkService.request(WeatherAPI.current(q: "\(lat),\(lon)"))
-    }
-    
-    func fetchForecastWeather(lat: String, lon: String, days: Int) async throws -> ForecastWeatherResponse {
+    func fetchWeather(lat: String, lon: String, days: Int) async throws -> ForecastWeatherResponse {
         try await networkService.request(WeatherAPI.forecast(q: "\(lat),\(lon)", days: "\(days)"))
     }
 }

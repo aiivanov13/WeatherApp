@@ -27,11 +27,22 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		F6938BF92F4DDADD000A1380 /* Exceptions for "WeatherApp" folder in "Compile Sources" phase from "WeatherApp" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = F66CE8212F4853EC000579A6 /* Sources */;
+			membershipExceptions = (
+				Resources/Mock/forecastMock.json,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F66CE8272F4853EC000579A6 /* WeatherApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				F66CE8372F4853ED000579A6 /* Exceptions for "WeatherApp" folder in "WeatherApp" target */,
+				F6938BF92F4DDADD000A1380 /* Exceptions for "WeatherApp" folder in "Compile Sources" phase from "WeatherApp" target */,
 			);
 			path = WeatherApp;
 			sourceTree = "<group>";

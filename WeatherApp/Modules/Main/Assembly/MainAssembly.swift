@@ -12,7 +12,9 @@ struct MainAssembly {
     static func assemble() -> UIViewController {
         let networkService = URLSessionNetworkService()
         let network = MainNetwork(networkService: networkService)
-        let service = MainService(network: network)
+        let mockNetwork = MainMockNetwork()
+        let locationService = LocationService()
+        let service = MainService(network: network, locationService: locationService)
         let viewModel = MainViewModel(service: service)
         let localization = MainLocalization()
         let view = MainViewController(viewModel: viewModel, localization: localization)

@@ -7,10 +7,19 @@
 
 import CoreLocation
 
-final class LocationService: NSObject {
+protocol LocationServiceProtocol {
+    
+    func requestLocation(completion: @escaping (Result<CLLocation, Error>) -> Void)
+}
+
+final class LocationService: NSObject, LocationServiceProtocol {
+    
+    enum LocationError: Error {
+        case permissionDenied
+    }
     
     private let manager = CLLocationManager()
-    private var streamContinuation: AsyncStream<CLLocation>.Continuation?
+    private var completion: ((Result<CLLocation, Error>) -> Void)?
     
     override init() {
         super.init()
@@ -18,53 +27,43 @@ final class LocationService: NSObject {
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
     
-    func locationUpdates() -> AsyncStream<CLLocation> {
-        AsyncStream { [weak self] continuation in
-            self?.streamContinuation = continuation
-            self?.handleAuthorization()
-            
-            self?.manager.startUpdatingLocation()
-            
-//            continuation.onTermination = { [weak self] _ in
-//                self?.manager.stopUpdatingLocation()
-//                self?.streamContinuation = nil
-//            }
-        }
-    }
-    
-    private func handleAuthorization() {
+    func requestLocation(completion: @escaping (Result<CLLocation, Error>) -> Void) {
+        self.completion = completion
+        
         switch manager.authorizationStatus {
         case .notDetermined:
             manager.requestWhenInUseAuthorization()
-        case .denied, .restricted:
-            streamContinuation?.finish()
         case .authorizedWhenInUse, .authorizedAlways:
-            break
-        @unknown default:
-            break
+            manager.requestLocation()
+        default:
+            completion(.failure(LocationError.permissionDenied))
         }
     }
 }
 
-// MARK: - CLLocationManagerDelegate
+// MARK: Delegate
 
 extension LocationService: CLLocationManagerDelegate {
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {        
         if manager.authorizationStatus == .authorizedWhenInUse ||
            manager.authorizationStatus == .authorizedAlways {
-            manager.startUpdatingLocation()
-        } else if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
-            streamContinuation?.finish()
+            manager.requestLocation()
+        } else if manager.authorizationStatus == .denied {
+            completion?(.failure(LocationError.permissionDenied))
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager,
+                         didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
-        streamContinuation?.yield(location)
+        completion?(.success(location))
+        completion = nil
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        streamContinuation?.finish()
+    func locationManager(_ manager: CLLocationManager,
+                         didFailWithError error: Error) {
+        completion?(.failure(error))
+        completion = nil
     }
 }

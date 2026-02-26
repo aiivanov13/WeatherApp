@@ -30,15 +30,36 @@ final class MainViewController: UIViewController {
     }
     
     // MARK: - UI
+    
+    private lazy var backgroundImage: UIImageView = {
+        let view = UIImageView()
+        view.image = Images.background
+        view.contentMode = .scaleAspectFill
+        return view
+    }()
 
-    private lazy var weatherCollectionView: UIView = {
-        let view = UIView()
+    private lazy var weatherCollectionView: WeatherCollection = {
+        let view = WeatherCollection()
+        view.refreshControl = refresher
         return view
     }()
     
-    private lazy var titleLabel: UILabel = {
-        let view = UILabel()
-        view.textColor = .white
+    private lazy var refresher: UIRefreshControl = {
+        let view = UIRefreshControl()
+        let action = UIAction { [weak self] _ in
+            self?.viewModel.loadData()
+        }
+        view.addAction(action, for: .valueChanged)
+        view.tintColor = Colors.white
+        return view
+    }()
+    
+    private lazy var errorModal: ErrorModal = {
+        let view = ErrorModal()
+        view.onRefreshTap = { [weak self] in
+            self?.viewModel.loadData()
+        }
+        view.isHidden = true
         return view
     }()
     
@@ -48,27 +69,36 @@ final class MainViewController: UIViewController {
         super.viewDidLoad()
         setupView()
         bind()
-        viewModel.getData()
+        viewModel.loadData()
     }
     
     // MARK: - Setups
     
     private func setupView() {
+        view.backgroundColor = Colors.white
         setupHierarchy()
         setupLayout()
     }
     
     private func setupHierarchy() {
-        view.addSubviews(weatherCollectionView, titleLabel)
+        view.addSubviews(
+            backgroundImage,
+            weatherCollectionView,
+            errorModal
+        )
     }
     
     private func setupLayout() {
+        backgroundImage.snp.makeConstraints {
+            $0.directionalEdges.equalToSuperview()
+        }
+        
         weatherCollectionView.snp.makeConstraints {
             $0.directionalEdges.equalToSuperview()
         }
         
-        titleLabel.snp.makeConstraints {
-            $0.center.equalToSuperview()
+        errorModal.snp.makeConstraints {
+            $0.directionalEdges.equalToSuperview()
         }
     }
     
@@ -85,6 +115,13 @@ final class MainViewController: UIViewController {
     }
     
     private func render() {
-        titleLabel.text = viewModel.name
+        errorModal.isHidden = !viewModel.isError
+        
+        if !viewModel.isLoading {
+            refresher.endRefreshing()
+        }
+        
+        guard !viewModel.items.isEmpty else { return }
+        weatherCollectionView.replaceData(with: viewModel.items)
     }
 }

@@ -11,10 +11,12 @@ import Observation
 @MainActor
 final class MainViewModel {
     
-    var name: String = ""
+    private(set) var items: [WeatherCollection.Item] = []
+    private(set) var isError = false
+    private(set) var isLoading = false
     
-    private var lat = "55.753960"
-    private var lon = "37.620393"
+    private var lat = "55.7540584"
+    private var lon = "37.62049"
     
     // Dependencies
     private let service: MainServiceProtocol
@@ -29,11 +31,29 @@ final class MainViewModel {
 
 extension MainViewModel {
     
-    func getData() {
+    func loadData() {
+        isLoading = true
+        isError = false
+
         Task {
-            let current = try await service.fetchCurrentWeather(lat: lat, lon: lon)
-            name = current.location.name
-//            try await service.fetchForecastWeather(lat: lat, lon: lon, days: 3)
+            do {
+                let (lat, lon) = try await service.getLocation()
+                self.lat = String(lat)
+                self.lon = String(lon)
+            } catch {
+                print(error)
+            }
+            
+            await fetchData()
+            isLoading = false
+        }
+    }
+    
+    private func fetchData() async {
+        do {
+            items = try await service.fetchWeather(lat: lat, lon: lon, days: 3)
+        } catch {
+            isError = true
         }
     }
 }

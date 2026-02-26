@@ -2,16 +2,15 @@
 //  WeatherCollectionCompositionalLayout.swift
 //  WeatherApp
 //
-//  Created by Александр Иванов on 21.02.2026.
+//  Created by Александр Иванов on 22.02.2026.
 //
 
 import UIKit
 
 extension WeatherCollection {
-    
     func createLayout() -> UICollectionViewLayout {
         UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
-            let section = self?.sectionData[sectionIndex]
+            let section = Section.allCases[sectionIndex]
             
             switch section {
             case .current:
@@ -20,43 +19,41 @@ extension WeatherCollection {
                 return self?.makeHoursSection()
             case .forecast:
                 return self?.makeForecastSection()
-            case .none:
-                return self?.makeCurrentSection()
             }
         }
     }
     
-    func makeCurrentSection() -> NSCollectionLayoutSection {
+    private func makeCurrentSection() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalHeight(1.0)
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalHeight(1)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.8),
-            heightDimension: .absolute(200)
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .estimated(200)
         )
-        let group = NSCollectionLayoutGroup.horizontal(
+        let group = NSCollectionLayoutGroup.vertical(
             layoutSize: groupSize,
             subitems: [item]
         )
         
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .groupPaging
+        section.contentInsets = .init(top: .zero, leading: 16, bottom: 16, trailing: 16)
         return section
     }
     
-    func makeHoursSection() -> NSCollectionLayoutSection {
+    private func makeHoursSection() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalHeight(1.0)
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalHeight(1)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.8),
-            heightDimension: .absolute(200)
+            widthDimension: .absolute(80),
+            heightDimension: .absolute(80)
         )
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize,
@@ -64,28 +61,45 @@ extension WeatherCollection {
         )
         
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .groupPaging
+        section.orthogonalScrollingBehavior = .continuous
+        section.interGroupSpacing = 8
+        section.contentInsets = .init(top: .zero, leading: 16, bottom: 8, trailing: 16)
         return section
     }
     
-    func makeForecastSection() -> NSCollectionLayoutSection {
+    private func makeForecastSection() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalHeight(1.0)
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .absolute(80)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.8),
-            heightDimension: .absolute(200)
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .estimated(240)
         )
-        let group = NSCollectionLayoutGroup.horizontal(
+        let group = NSCollectionLayoutGroup.vertical(
             layoutSize: groupSize,
             subitems: [item]
         )
         
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .groupPaging
+        section.interGroupSpacing = 8
+        section.contentInsets = .init(top: .zero, leading: 16, bottom: .zero, trailing: 16)
+        
+        let headerSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .estimated(44)
+        )
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+        
+        header.pinToVisibleBounds = true
+        section.boundarySupplementaryItems = [header]
+        
         return section
     }
 }
