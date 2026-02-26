@@ -7,7 +7,7 @@ target 'WeatherApp' do
 
   # Pods for WeatherApp
 
-  pod 'SnapKit'
-  pod 'Kingfisher'
+  pod 'SnapKit', '~> 5.7.1'
+  pod 'Kingfisher', '~> 8.7.0'
 
 end
